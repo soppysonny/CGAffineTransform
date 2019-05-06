@@ -1,3 +1,3 @@
 # CGAffineTransform
-Demo help you understand CGAffineTransform
+Demo help you understand rotating\mirroring with CGAffineTransform
 
