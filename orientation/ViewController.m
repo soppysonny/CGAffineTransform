@@ -16,6 +16,9 @@
 @property (weak, nonatomic) IBOutlet UITextField *tf_tx;
 @property (weak, nonatomic) IBOutlet UITextField *tf_ty;
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
+@property (weak, nonatomic) IBOutlet UISlider *slider;
+@property (weak, nonatomic) IBOutlet UIView *sp;
+@property (assign, nonatomic)CGRect rect;
 
 @end
 
@@ -36,8 +39,21 @@
     UIRotationGestureRecognizer *rotation = [[UIRotationGestureRecognizer alloc]initWithTarget:self action:@selector(rotateAction:)];
     rotation.delegate = self;
     [self.imageView addGestureRecognizer:rotation];
+    self.slider.value = 0;
+    self.slider.maximumValue = M_PI;
+    self.slider.minimumValue = 0;
+    [self.slider sendActionsForControlEvents:UIControlEventValueChanged];
+    self.rect = self.imageView.frame;
+    self.sp.frame = self.rect;
 }
 
+- (IBAction)rotate:(id)sender {
+    CGAffineTransform transform = self.imageView.transform;
+    NSLog(@"%lf",[(UISlider *)sender value]);
+    CGAffineTransform newTransform = CGAffineTransformConcat(transform, CGAffineTransformMakeRotation([(UISlider *)sender value]));
+    self.imageView.transform = newTransform;
+    [self refreshTf];
+}
 
 - (IBAction)change:(id)sender {
     for (UIView *subview in self.view.subviews) {
@@ -80,6 +96,13 @@
     self.tf_d.text = [NSString stringWithFormat:@"%.2lf",transform.d];
     self.tf_tx.text = [NSString stringWithFormat:@"%.2lf",transform.tx];
     self.tf_ty.text = [NSString stringWithFormat:@"%.2lf",transform.ty];
+//    CGFloat width = self.imageView.frame.size.width;
+//    CGFloat height = self.imageView.frame.size.height;
+//    CGFloat newW = fabs(transform.a * width + transform.c * height);
+//    CGFloat newH = fabs(transform.b * width + transform.d * height);
+    self.sp.frame = CGRectApplyAffineTransform(self.rect, transform);
+    NSLog(@"%@\n%@",[NSValue valueWithCGRect:self.sp.frame], [NSValue valueWithCGRect:self.imageView.frame]);
+    
 }
 
 - (IBAction)mirror:(id)sender {

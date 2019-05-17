@@ -80,12 +80,26 @@
                                     <action selector="change:" destination="BYZ-38-t0r" eventType="touchUpInside" id="yA7-SA-F6M"/>
                                 </connections>
                             </button>
+                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="XIM-W3-qPl">
+                                <rect key="frame" x="111" y="559" width="255" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="rotate:" destination="BYZ-38-t0r" eventType="valueChanged" id="a0f-kP-Aro"/>
+                                </connections>
+                            </slider>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ehd-R2-Kwv">
+                                <rect key="frame" x="141" y="259" width="152" height="231"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
                         <outlet property="imageView" destination="e74-V0-BGJ" id="e5J-6V-eYd"/>
+                        <outlet property="slider" destination="XIM-W3-qPl" id="9w2-p5-Dar"/>
+                        <outlet property="sp" destination="Ehd-R2-Kwv" id="SCC-yZ-ViH"/>
                         <outlet property="tf_a" destination="zAr-jr-Czj" id="aF5-RB-bxL"/>
                         <outlet property="tf_b" destination="XP8-Sc-RBh" id="YkH-e4-bFA"/>
                         <outlet property="tf_c" destination="zXa-IO-0sR" id="fGa-5R-J5H"/>
