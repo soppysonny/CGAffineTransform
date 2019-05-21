@@ -19,7 +19,7 @@
 @property (weak, nonatomic) IBOutlet UISlider *slider;
 @property (weak, nonatomic) IBOutlet UIView *sp;
 @property (assign, nonatomic)CGRect rect;
-
+@property (strong, nonatomic)UIImage *image;
 @end
 
 @implementation ViewController
@@ -27,7 +27,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor lightGrayColor];
-
+    self.image = [self.imageView.image copy];
     UIPinchGestureRecognizer* pincher = [[UIPinchGestureRecognizer alloc]initWithTarget:self action:@selector(pinchAction:)];
     pincher.delegate = self;
     [self.imageView addGestureRecognizer:pincher];
@@ -45,14 +45,60 @@
     [self.slider sendActionsForControlEvents:UIControlEventValueChanged];
     self.rect = self.imageView.frame;
     self.sp.frame = self.rect;
+    self.imageView.layer.masksToBounds = NO;
+}
+
+- (CGImageRef)applyTransform:(CGAffineTransform)transform toImageRef:(CGImageRef)imageref{
+    size_t width = CGImageGetWidth(imageref);
+    size_t height = CGImageGetHeight(imageref);
+    
+    CGAffineTransform invertedTransform = CGAffineTransformInvert(transform);
+    CGFloat newW = transform.a * width + transform.c * height;
+    CGFloat newH = transform.b * width + transform.d * height;
+    
+//    CGSize newSize = CGSizeApplyAffineTransform(CGSizeMake(width, height), transform);
+    CGSize newSize = CGRectApplyAffineTransform(CGRectMake(0, 0, width, height), transform).size;
+//    invertedTransform.tx = (newW - width) * 0.5;
+//    invertedTransform.ty = (newH - height) * 0.5;
+//     [ cos(angle) sin(angle) -sin(angle) cos(angle) 0 0 ]
+    // x' = cos(angle) * x - sin(angle) * y + tx
+    // y' = sin(angle) * x + cos(angle) * y + ty
+    
+    
+    CGContextRef ctx = CGBitmapContextCreate(NULL, newSize.width, newSize.height,
+                                             CGImageGetBitsPerComponent(imageref), 0,
+                                             CGImageGetColorSpace(imageref),
+                                             CGImageGetBitmapInfo(imageref));
+    
+    CGContextConcatCTM(ctx, transform);
+    NSLog(@"%.2lf, %.2lf",transform.a, transform.b);
+    //transform.b * height
+    CGRect rotatedDrawRect = CGRectZero;
+    if (transform.a >= 0 && transform.b >= 0) {
+        rotatedDrawRect = CGRectMake(transform.b * height * transform.a, - transform.b * transform.b * height, width, height);
+    }else if (transform.a <= 0 && transform.b >= 0) {
+        rotatedDrawRect = CGRectMake(- fabs(powf(transform.a, 2) * width), - fabs(transform.a * transform.b * width) - height, width, height);
+    }else if (transform.a <= 0 && transform.b <= 0){
+        rotatedDrawRect = CGRectMake(- fabs(width + height * fabs(transform.a * transform.b)), - fabs(height * powf(transform.a, 2)), width, height);
+    }else if (transform.a >= 0 && transform.b <= 0){
+        rotatedDrawRect = CGRectMake(- fabs(powf(transform.b, 2) * width), fabs(transform.a * transform.b * width), width, height);
+    }
+    NSLog(@"%@", [NSValue valueWithCGRect:rotatedDrawRect]);
+    CGContextDrawImage(ctx, rotatedDrawRect, imageref);
+    CGImageRef resultRef = CGBitmapContextCreateImage(ctx);
+    CGContextRelease(ctx);
+    return resultRef;
 }
 
 - (IBAction)rotate:(id)sender {
-    CGAffineTransform transform = self.imageView.transform;
-    NSLog(@"%lf",[(UISlider *)sender value]);
-    CGAffineTransform newTransform = CGAffineTransformConcat(transform, CGAffineTransformMakeRotation([(UISlider *)sender value]));
-    self.imageView.transform = newTransform;
-    [self refreshTf];
+    CGImageRef imageRef = [self applyTransform:CGAffineTransformMakeRotation(M_PI * [(UISlider *)sender value]) toImageRef:self.image.CGImage];
+    self.imageView.image = [UIImage imageWithCGImage:imageRef];
+    CGImageRelease(imageRef);
+//    CGAffineTransform transform = self.imageView.transform;
+//    NSLog(@"%lf",[(UISlider *)sender value]);
+//    CGAffineTransform newTransform = CGAffineTransformConcat(transform, CGAffineTransformMakeRotation([(UISlider *)sender value]));
+//    self.imageView.transform = newTransform;
+//    [self refreshTf];
 }
 
 - (IBAction)change:(id)sender {
@@ -100,8 +146,8 @@
 //    CGFloat height = self.imageView.frame.size.height;
 //    CGFloat newW = fabs(transform.a * width + transform.c * height);
 //    CGFloat newH = fabs(transform.b * width + transform.d * height);
-    self.sp.frame = CGRectApplyAffineTransform(self.rect, transform);
-    NSLog(@"%@\n%@",[NSValue valueWithCGRect:self.sp.frame], [NSValue valueWithCGRect:self.imageView.frame]);
+//    self.sp.frame = CGRectApplyAffineTransform(self.rect, transform);
+//    NSLog(@"%@\n%@",[NSValue valueWithCGRect:self.sp.frame], [NSValue valueWithCGRect:self.imageView.frame]);
     
 }
 
